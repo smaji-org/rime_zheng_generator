@@ -153,5 +153,5 @@ if __name__ == "__main__":
                 output_file.write(comp_file.read())
 
     with open(os.path.join(opts.output, "data", opts.name + ".schema.yaml"), "w") as output_file:
-        output_file.write(rime_config.schema.format(opts.version))
+        output_file.write(rime_config.schema.format(opts.name, opts.version, opts.name))
 

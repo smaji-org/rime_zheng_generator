@@ -36,7 +36,7 @@ schema= ('''# Rime schema settings
 # encoding: utf-8
 
 schema:
-  schema_id: smaji_zheng
+  schema_id: {}
   name: "Smaji 鄭碼"
   version: "{}"
   author:
@@ -81,7 +81,7 @@ speller:
   max_code_length: 5
 
 translator:
-  dictionary: smaji_zheng
+  dictionary: {}
   enable_sentence: true
   enable_encoder: true
   encode_commit_history: true
