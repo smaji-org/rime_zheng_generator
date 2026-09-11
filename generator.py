@@ -22,7 +22,7 @@ from typing import TextIO
 
 description= ('''Smaji 鄭碼
 碼表源自鄭碼發明人以及熱心用戶的貢獻''')
- 
+
 opt_parser= argparse.ArgumentParser()
 
 opt_parser.add_argument("--cjkv_info", type= str,
@@ -79,13 +79,15 @@ def setup_opt() -> Opts:
     args= opt_parser.parse_args()
     opts.cjkv_info= mystr(args.cjkv_info) or opts.cjkv_info
     opts.name= mystr(args.name) or opts.name
-    opts.region= mystr(args.region).split(",") or opts.region
+    if args.region:
+        opts.region = [r.strip() for r in args.region.split(",") if r.strip()]
     opts.description= mystr(args.description) or opts.description
     opts.version= mystr(args.version)
     opts.comment= mystr(args.comment) or opts.comment
     opts.datetime= mystr(args.datetime) or opts.datetime
     opts.input= mystr(args.input) or opts.input
     opts.output= mystr(args.output) or opts.output
+
     if args.verbose is None:
         opts.verbose= False
     else:
@@ -97,24 +99,27 @@ def setup_opt() -> Opts:
     return opts
 
 def record_a_char(file: TextIO, char_dir: Path, core: int, verbose=False):
-    if char_dir.exists():
+    if char_dir.is_dir():
         core= int(char_dir.name, base=16)
         for glyph_dir in char_dir.iterdir():
-            char= chr(core)
-            variation= int(glyph_dir.name, base=16)
-            if variation != 0:
-                char= char + chr(variation)
-            with open(glyph_dir/"zhengma", "r") as file_zhengma:
-                zhengma_list= file_zhengma.readlines()
-                for zhengma in zhengma_list:
-                    zhengma= zhengma.strip()
-                    if verbose:
-                        item="{}\t{} # {:x}:{:x}\n".format(
-                            char, zhengma,
-                            core, variation)
-                    else:
-                        item="{}\t{}\n".format(char, zhengma)
-                    file.write(item)
+            if glyph_dir.is_dir():
+                char= chr(core)
+                variation= int(glyph_dir.name, base=16)
+                if variation != 0:
+                    char= char + chr(variation)
+                zhengma_path = glyph_dir / "zhengma"
+                if zhengma_path.exists():
+                    with open(zhengma_path, "r") as file_zhengma:
+                        zhengma_list= file_zhengma.readlines()
+                        for zhengma in zhengma_list:
+                            zhengma= zhengma.strip()
+                            if verbose:
+                                item="{}\t{} # {:x}:{:x}\n".format(
+                                    char, zhengma,
+                                    core, variation)
+                            else:
+                                item="{}\t{}\n".format(char, zhengma)
+                            file.write(item)
 
 
 def record_a_block(file: TextIO, dir: Path, block_name: str, verbose=False):
@@ -126,6 +131,10 @@ def record_a_block(file: TextIO, dir: Path, block_name: str, verbose=False):
 
 def record_dict(file: TextIO, dir: str, verbose=False):
     dict_dir= Path(dir) / "glyph"
+    if not dict_dir.is_dir():
+        dict_dir= Path(dir)
+    if not dict_dir.is_dir():
+        return
     for block in blocks.blocks_current.keys():
         record_a_block(file, dict_dir, block, verbose)
 
